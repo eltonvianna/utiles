@@ -45,8 +45,8 @@ public final class ObjectUtils {
      * throws {@link RuntimeException} caused by caught an {@link Exception} if lenient is <code>false</code>
      */
     @SuppressWarnings("unchecked")
-    public static <T> List<T> newInstances(final String[] classesNames) {
-        return Arrays.stream(classesNames).map(h -> (T) ObjectUtils.newInstance(h)).collect(Collectors.toList());
+    public static <T> List<T> newInstances(final String[] classesNames, final Object... initargs) {
+        return Arrays.stream(classesNames).map(h -> (T) ObjectUtils.newInstance(h, initargs)).collect(Collectors.toList());
     }
     
     /**
@@ -85,6 +85,10 @@ public final class ObjectUtils {
         try {
             return (T) newInstance(Class.forName(className), lenient, initargs);
         } catch (ClassNotFoundException e) {
+            try {
+                return (T) newInstance(Thread.currentThread().getContextClassLoader().loadClass(className), lenient, initargs);
+            } catch (ClassNotFoundException e2) {
+            }
             if (false == lenient) {
                 throw new RuntimeException(e);
             }
@@ -134,10 +138,35 @@ public final class ObjectUtils {
      * @throws NoSuchMethodException
      * @throws ClassNotFoundException
      */
+    @SuppressWarnings("unchecked")
     public static <T> Constructor<T> findConstructor(final Class<T> clazz, final Object... initargs)
             throws NoSuchMethodException, ClassNotFoundException {
         ObjectUtils.requireNotNull(clazz, "clazz parameter is null");
-        return clazz.getConstructor(ObjectUtils.getTypes(initargs));
+        Constructor<T> constructor = null;
+        final Class<?>[] types = ObjectUtils.getTypes(initargs);
+        try {
+            constructor = clazz.getDeclaredConstructor(types);
+        } catch (Exception e) {
+            findConstructor:
+            for (final Constructor<?> declaredConstructor : clazz.getDeclaredConstructors()) {
+                final Class<?>[] parameterTypes = declaredConstructor.getParameterTypes();
+                if (types.length != parameterTypes.length) {
+                    continue;
+                }
+                checkConstructor:
+                for (int i = 0; i++ < types.length;) {
+                    if (!parameterTypes[i].isAssignableFrom(types[i])) {
+                        break checkConstructor;
+                    }
+                    constructor = (Constructor<T>) declaredConstructor;
+                    break findConstructor;
+                }
+            }
+            if (null == constructor) {
+                throw new NoSuchMethodException(clazz + "(" + Arrays.toString(types) + ")");
+            }
+        }
+        return constructor;
     }
     
     /**
@@ -260,5 +289,16 @@ public final class ObjectUtils {
             return null;
         }
         return (Class<T>) ((ParameterizedType) obj.getClass().getGenericSuperclass()).getActualTypeArguments()[typeIndex];
+    }
+
+    /**
+     * @param enumType
+     * @param name
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static <E extends Enum<?>> E getEnum(final E enumType, final String name) {
+        CharSequenceUtils.requireNotBlank(name, "name parameter is null");
+        return null == enumType ? null : (E) Enum.valueOf(enumType.getClass(), name.trim().toUpperCase());
     }
 }

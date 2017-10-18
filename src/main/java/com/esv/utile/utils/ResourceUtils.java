@@ -48,7 +48,7 @@ public final class ResourceUtils {
     public static String normalize(final String resourceName) {
         CharSequenceUtils.requireNotBlank(resourceName, "resourceName parameter is empty");
         final String path = Paths.get(resourceName).normalize().toString();
-        return path.indexOf("\\") == -1 ? path : path.replaceAll("\\\\", "/");
+        return path.indexOf("\\") == -1 ? path : path.replaceAll("[/\\\\]+", "/");
     }
 
     /**
