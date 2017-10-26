@@ -18,9 +18,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import com.esv.utile.logging.Logger;
 
 /**
  * @author Elton S. Vianna <elton.vianna@yahoo.co.uk>
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
  */
 public final class ResourceUtils {
     
-    private static final Logger LOGGER = Logger.getGlobal();
+    private static final Logger LOGGER = Logger.getLogger(ResourceUtils.class);
     
     private static final String fileSeparator = "\\" + File.separator;
     private static final Pattern pattern = Pattern.compile(".*[A-Za-z]+.class$");
@@ -62,10 +63,10 @@ public final class ResourceUtils {
         final long startTime = System.currentTimeMillis();
         try {
             if (resourceName.indexOf(File.pathSeparator) == -1) {
-                LOGGER.finest(() -> "Listing regular files using Files.walk(). Resource directory: " + resourceName);
+                LOGGER.debug(() -> "Listing regular files using Files.walk(). Resource directory: " + resourceName);
                 return Files.walk(ResourceUtils.path(resourceName)).filter(Files::isRegularFile).collect(Collectors.toList());
             } else {
-                LOGGER.finest(() -> "Listing regular files using File.listFiles() recursively. Class path: " + resourceName);
+                LOGGER.debug(() -> "Listing regular files using File.listFiles() recursively. Class path: " + resourceName);
                 final List<Path> files = new ArrayList<>();
                 for (final String path : resourceName.split(File.pathSeparator)) {
                     final File file = new File(path);
@@ -78,7 +79,7 @@ public final class ResourceUtils {
                 return files;
             }
         } finally {
-            LOGGER.finest(() -> "Spent time: " + (System.currentTimeMillis() - startTime) + " ms");
+            LOGGER.debug(() -> "Spent time: " + (System.currentTimeMillis() - startTime) + " ms");
         }
     }
     
@@ -119,9 +120,9 @@ public final class ResourceUtils {
             if (pattern.matcher(name).matches()) {
                 int idx = name.indexOf("classes");
                 if (idx > -1) {
-                    LOGGER.finest(() -> "Found class: " + name);
+                    LOGGER.debug(() -> "Found class: " + name);
                     final String className = ResourceUtils.toCanonicalName(name.substring(idx + 8));
-                    LOGGER.finest(() -> "Canonical name: " + className);
+                    LOGGER.debug(() -> "Canonical name: " + className);
                     classes.add(className);
                 }
             }
@@ -166,10 +167,10 @@ public final class ResourceUtils {
             return null;
         }
         final URL url1 = Thread.currentThread().getContextClassLoader().getResource(resourceName);
-        LOGGER.finest(() -> "Resource name: " + resourceName + ", url1: " + url1);
+        LOGGER.debug(() -> "Resource name: " + resourceName + ", url1: " + url1);
         if (null == url1) {
             final URL url2 = ResourceUtils.class.getClassLoader().getResource(resourceName);
-            LOGGER.finest(() -> "Resource name: " + resourceName + ", url2: " + url2);
+            LOGGER.debug(() -> "Resource name: " + resourceName + ", url2: " + url2);
             return url2;
         }
         return url1;
@@ -184,10 +185,10 @@ public final class ResourceUtils {
             return null;
         }
         final InputStream is1 = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
-        LOGGER.finest(() -> "Resource name: " + resourceName + ", inputStream1: " + is1);
+        LOGGER.debug(() -> "Resource name: " + resourceName + ", inputStream1: " + is1);
         if (null == is1) {
             final InputStream is2 = ResourceUtils.class.getClassLoader().getResourceAsStream(resourceName);
-            LOGGER.finest(() -> "Resource name: " + resourceName + ", inputStream2: " + is2);
+            LOGGER.debug(() -> "Resource name: " + resourceName + ", inputStream2: " + is2);
             return is2;
         }
         return is1;
