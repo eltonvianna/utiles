@@ -37,6 +37,7 @@ public abstract class AbstractRollingLogAppender extends AbstractLogAppender {
 
     private static FileOutputStream fos;
     private volatile static long nextRolloverTime;
+    private volatile static boolean logFileEmpty;
     
     /**
      * @param appenderName
@@ -51,8 +52,8 @@ public abstract class AbstractRollingLogAppender extends AbstractLogAppender {
             this.timestampFormater = new SimpleDateFormat(Configuration.getTimestampPattern(appenderName));
             this.path = Paths.get(this.fileName);
             if (touchFile()) {
-                openOutputStream();
                 setNextRolloverTime();
+                openOutputStream();
             }
         } catch (Exception e) {
             throw new ExceptionInInitializerError(e);
@@ -96,7 +97,7 @@ public abstract class AbstractRollingLogAppender extends AbstractLogAppender {
             closeOutputStream();
             rollover(logEvent);
             openOutputStream();
-        };
+        }
     }
 
     /**
@@ -117,8 +118,15 @@ public abstract class AbstractRollingLogAppender extends AbstractLogAppender {
     /**
      * @return
      */
+    protected boolean isLogFileEmpty() {
+        return logFileEmpty || (logFileEmpty = checkLogFileSize() == 0);
+    }
+    
+    /**
+     * @return
+     */
     protected boolean isLogFileNotEmpty() {
-        return checkLogFileSize() > 0;
+        return ! isLogFileEmpty();
     }
     
     /**
@@ -141,12 +149,12 @@ public abstract class AbstractRollingLogAppender extends AbstractLogAppender {
     /**
      * @param os
      */
-    protected boolean moveFile(final OutputStream os) {
+    protected synchronized boolean moveFile(final OutputStream os) {
         if (null != os) {
             try {
                 Files.copy(this.path, os);
                 os.flush();
-                Files.delete(this.path);
+                deleteFile();
                 return touchFile();
             } catch (Exception e) {
                 // ignored
@@ -154,16 +162,27 @@ public abstract class AbstractRollingLogAppender extends AbstractLogAppender {
         }
         return false;
     }
+
+    /**
+     * 
+     */
+    protected synchronized void deleteFile() {
+        try {
+            Files.delete(this.path);
+        } catch (Exception e) {
+            // ignored
+        }
+    }
     
     /**
      * 
      * @return
      */
-    protected boolean touchFile() {
+    protected synchronized boolean touchFile() {
         try {
             if (!Files.exists(this.path)) {
                 Files.createFile(this.path);
-                return true;
+                return logFileEmpty = true;
             }
         } catch (Exception e) {
             // ignored
@@ -185,21 +204,21 @@ public abstract class AbstractRollingLogAppender extends AbstractLogAppender {
     /**
      * @throws IOException
      */
-    protected void closeOutputStream() {
+    protected synchronized void closeOutputStream() {
         IOUtils.flushAndlCloseQuietly(fos);
     }
     
     /**
      * @return
      */
-    protected boolean isOutputStreamOpen() {
-        return null != fos & fos.getChannel().isOpen();
+    protected synchronized boolean isOutputStreamOpen() {
+        return null != fos && fos.getChannel().isOpen();
     }
     
     /**
      * @return
      */
-    protected boolean isOutputStreamClosed() {
+    protected synchronized boolean isOutputStreamClosed() {
         return ! isOutputStreamOpen();
     }
     
@@ -207,7 +226,7 @@ public abstract class AbstractRollingLogAppender extends AbstractLogAppender {
      * 
      * @return
      */
-    protected long checkLogFileSize() {
+    protected synchronized long checkLogFileSize() {
         try {
             return Files.size(this.path);
         } catch (Exception e) {

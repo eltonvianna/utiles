@@ -12,7 +12,7 @@ import javax.management.ObjectName;
 import com.esv.utile.logging.Logger.Level;
 import com.esv.utile.logging.core.appender.LogAppender;
 import com.esv.utile.logging.core.appender.RollingLogAppender;
-import com.esv.utile.logging.core.layout.StaticLogLayout;
+import com.esv.utile.logging.core.layout.SimpleLogLayout;
 import com.esv.utile.logging.core.logger.AsyncLogger;
 import com.esv.utile.utils.PropertiesUtils;
 
@@ -27,9 +27,9 @@ public class Configuration implements ConfigurationMBean {
     public static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
     public static final String LOGFILE_NAME = "logging.log";
     
-    public static final int DEFAULT_ROLLOVER_PERIOD = 900;
+    public static final int DEFAULT_ROLLOVER_PERIOD = 3600;
     public static final int MIN_ROLLOVER_PERIOD = 5;
-    public static final int MIN_LOG_EVENT_TIME_WAIT = 100;
+    public static final int MIN_LOG_EVENT_TIME_WAIT = 1;
     
     public static final String LOGGING_LOGGER = "logging.logger";
     public static final String LOGGING_FILE_NAME = "logging.fileName";
@@ -39,8 +39,9 @@ public class Configuration implements ConfigurationMBean {
     public static final String LOGGING_LEVEL = "logging.level";
     public static final String LOGGING_DATE_PATTERN = "logging.datePattern";
     public static final String LOGGING_APPENDERS = "logging.appenders";
-    public static final String LOGGING_ASYNC_LOG_EVENT_TIME_WAIT = "logging.async.logEventTimeWait";
     public static final String LOGGING_LOG_LAYOUT = "logging.logLayout";
+    public static final String LOGGING_ASYNC_LOG_EVENT_TIME_WAIT = "logging.async.logEventTimeWait";
+    public static final String LOGGING_ASYNC_THREAD_POOL_SIZE = "logging.async.threadPoolSize";
     
     static {
         try {
@@ -126,21 +127,11 @@ public class Configuration implements ConfigurationMBean {
     }
     
     /**
-     * 
-     * @param appenderName
-     * @return
-     */
-    public static long getLogEventTimeWait() {
-        final long value = PropertiesUtils.getLongProperty(Configuration.LOGGING_ASYNC_LOG_EVENT_TIME_WAIT, 100);
-        return value < 100 ? 100 : value;
-    }
-    
-    /**
      * @param name
      * @return
      */
     public static String getLogLayout(final String appenderName) {
-        return Configuration.getOrDefault(Configuration.LOGGING_LOG_LAYOUT, StaticLogLayout.class.getCanonicalName(), appenderName);
+        return Configuration.getOrDefault(Configuration.LOGGING_LOG_LAYOUT, SimpleLogLayout.class.getCanonicalName(), appenderName);
     }
     
     /**
@@ -160,6 +151,22 @@ public class Configuration implements ConfigurationMBean {
      */
     private static String getAppenderSufix(final String appenderName) {
         return LogAppender.isGlobal(appenderName) ? null : appenderName;
+    }
+    
+    /**
+     * @return
+     */
+    public static long getLogEventTimeWait() {
+        final long value = PropertiesUtils.getLongProperty(Configuration.LOGGING_ASYNC_LOG_EVENT_TIME_WAIT, 100);
+        return value < 100 ? 100 : value > 500 ? 500 : value;
+    }
+    
+    /**
+     * @return
+     */
+    public static int getThreadPoolSize() {
+        final int value = PropertiesUtils.getIntProperty(Configuration.LOGGING_ASYNC_THREAD_POOL_SIZE, 10);
+        return value < 10 ? 10: value > 100 ? 100 : value;
     }
     
     // ---------------------------------------------------------------------------------------------------- //

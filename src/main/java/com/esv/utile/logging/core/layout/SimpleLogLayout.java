@@ -10,7 +10,7 @@ import com.esv.utile.logging.core.LogEvent;
  * @version 1.0
  * @since 14/10/2017
  */
-final public class StaticLogLayout extends AbstractLogLayout {
+final public class SimpleLogLayout extends AbstractLogLayout {
 
     /*
      * (non-Javadoc)
@@ -19,7 +19,7 @@ final public class StaticLogLayout extends AbstractLogLayout {
     @Override
     public byte[] toByteArray(final LogEvent event) {
         final StringBuilder sb = new StringBuilder("[").append(event.getLevel()).append("] ").append(event.getFormatedDate()).append(" [")
-                .append(Thread.currentThread().getName()).append("] ").append(event.getAppenderName()).append(" - ").append(event.getMessage()).append("\n");
+                .append(getThreadName()).append("] ").append(event.getAppenderName()).append(" - ").append(event.getMessage()).append("\n");
        return appendStackTrace(event.getThrowable(), sb).toString().getBytes();
     }
 }

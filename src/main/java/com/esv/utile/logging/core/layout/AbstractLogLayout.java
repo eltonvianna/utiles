@@ -32,4 +32,10 @@ public abstract class AbstractLogLayout implements LogLayout {
         return sb;
     }
 
+    /**
+     * @return
+     */
+    protected String getThreadName() {
+        return Thread.currentThread().getName();
+    }
 }
