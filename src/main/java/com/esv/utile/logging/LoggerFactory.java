@@ -45,7 +45,7 @@ final class LoggerFactory {
      * @return
      */
     public synchronized static Logger getLogger(final String name) {
-        CharSequenceUtils.requireNotBlank("name", "name parameter is null");
+        CharSequenceUtils.requireNotBlank(name, "name parameter is null");
         Logger logger = LoggerFactory.loggers.get(name);
         if (null == logger) {
             final String loggerClass = Configuration.getLogger(name);
