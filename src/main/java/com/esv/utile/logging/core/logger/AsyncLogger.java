@@ -36,7 +36,7 @@ public final class AsyncLogger extends AbstractLogger {
         queue = new LinkedBlockingQueue<>();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            LOGGER.warn(() -> "JVM shutdown sequence has been initiated! :O");
+            LOGGER.warn("JVM shutdown sequence has been initiated! :O");
             LOGGER.warn(() -> "Stopping gracefully the logging thread pool. Current enqueued LogEvent's: " + queue.size());
             consumer.shutdown();
             final long startTime = currentTimeMillis();
@@ -91,7 +91,7 @@ public final class AsyncLogger extends AbstractLogger {
      */
     private Runnable logEventConsumer() {
         return () -> {
-            LOGGER.trace(() -> "LogEvent's consumer has been started successfully");
+            LOGGER.trace("LogEvent's consumer has been started successfully");
             halt:
             for(;;) {
                 try {
@@ -101,11 +101,11 @@ public final class AsyncLogger extends AbstractLogger {
                     }
                     TimeUnit.MILLISECONDS.sleep(Configuration.getLogEventTimeWait());
                     if (consumer.isShutdown() && queue.isEmpty()) {
-                        LOGGER.trace(() -> "Stopping gracefully LogEvent's consumer after shutdown sequence initiated");
+                        LOGGER.trace("Stopping gracefully LogEvent's consumer after shutdown sequence initiated");
                         break halt;
                     }
                 } catch (InterruptedException e) {
-                    LOGGER.warn(() -> "Forcing to halts LogEvent's consumer after shutdown sequence initiated").trace("Stack trace: ", e);
+                    LOGGER.warn("Forcing to halts LogEvent's consumer after shutdown sequence initiated").trace("Stack trace: ", e);
                     break halt;
                 }
             }
