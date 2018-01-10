@@ -17,6 +17,42 @@ Installation of **Java 8** and **Maven 3**. Add **JAVA_HOME/jre/bin** and **M2_H
 
 After cloned this project, change to **utiles** directory and run the command: **mvn clean install**. This command will perform the build, run the tests and packaging.
 
+### Logging configuration
+
+The current Java logging configuration is file based, editing the file application.properties you can change log level, add appenders, etc.
+
+````
+## The global logger (optional. Default: com.esv.utile.logging.core.logger.AsyncLogger)
+#logging.logger=com.esv.utile.logging.core.logger.AsyncLogger
+
+# The log file name (optional. Default: logging.log)
+#logging.fileName=logging.log
+
+# The rollover period. *IN SECONDS* (optional. Default: 3600s = 60 mins). The mininal rollver time is 5s.
+#logging.rolloverPeriod=3600
+
+# Enable compression after the log file rollover (optional. Default: true) 
+#logging.rolloverGzipEnabled=true
+
+# The timestamp sufix pattern after log rollover (optional. Default: yyyyMMddHHmmss)
+#logging.timestampPattern=yyyyMMddHHmmss
+
+# The global logging level (optional. Default: INFO).
+logging.level=ALL
+
+# The date pattern (optional. Default: yyyy-MM-dd'T'HH:mm:ss.SSSZ)
+#logging.datePattern=yyyy-MM-dd'T'HH:mm:ss.SSSZ
+
+# The log appenders (optional. Default: com.esv.utile.logging.core.appender.RollingLogAppender) See also: com.esv.utile.logging.core.appender.ConsoleLogAppender
+#logging.appenders=com.esv.utile.logging.core.appender.RollingLogAppender
+
+# The time waiting to consume the enqueued LogEvents. *IN MILLISECONDS* (optional. Default value: 100). The minimal time wait value is 100ms
+#logging.async.logEventTimeWait=100
+
+# The log layout (optional. Default: com.esv.utile.logging.core.StaticLogLayout)
+#logging.logLayout=com.esv.utile.logging.core.StaticLogLayout
+````
+
 ### Unexpected errors
 
 You can open the log file to see more details about unexpected errors in the server side.
