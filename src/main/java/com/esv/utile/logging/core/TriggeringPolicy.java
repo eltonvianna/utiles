@@ -13,7 +13,7 @@ public interface TriggeringPolicy {
     
     /**
      * 
-     * @param supplier
+     * @param logEvent
      * @return
      */
     boolean isTriggeringEvent(final LogEvent logEvent);
