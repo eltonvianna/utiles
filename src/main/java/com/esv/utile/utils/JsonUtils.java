@@ -51,37 +51,6 @@ public final class JsonUtils {
     }
 
     /**
-     * @param sb
-     * @param entry
-     */
-    private static void addAttribute(final StringBuilder sb, final Object obj) {
-        sb.append("\"");
-        sb.append(String.valueOf(obj));
-        sb.append("\":");
-    }
-
-    /**
-     * 
-     * @param sb
-     * @param obj
-     * @param counter
-     * @param lastIndex
-     * @return
-     */
-    private static void addValue(final StringBuilder sb, final Object obj, final int counter, final int lastIndex) {
-        if (ObjectUtils.isScalar(obj)) {
-            sb.append("\"");
-            sb.append(String.valueOf(obj));
-            sb.append("\"");
-        } else {
-            JsonUtils.marshall(sb, obj);
-        }
-        if (counter < lastIndex) {
-            sb.append(",");
-        }
-    }
-
-    /**
      * 
      * @param collection
      * @return
@@ -155,6 +124,37 @@ public final class JsonUtils {
         return JsonUtils.marshall(new StringBuilder(), obj);
     }
 
+    /**
+     * @param sb
+     * @param entry
+     */
+    private static void addAttribute(final StringBuilder sb, final Object obj) {
+        sb.append("\"");
+        sb.append(String.valueOf(obj));
+        sb.append("\":");
+    }
+
+    /**
+     * 
+     * @param sb
+     * @param obj
+     * @param counter
+     * @param lastIndex
+     * @return
+     */
+    private static void addValue(final StringBuilder sb, final Object obj, final int counter, final int lastIndex) {
+        if (ObjectUtils.isScalar(obj)) {
+            sb.append("\"");
+            sb.append(String.valueOf(obj));
+            sb.append("\"");
+        } else {
+            JsonUtils.marshall(sb, obj);
+        }
+        if (counter < lastIndex) {
+            sb.append(",");
+        }
+    }
+    
     /**
      * @return
      */
